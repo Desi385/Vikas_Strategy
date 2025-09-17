@@ -1,30 +1,34 @@
 #!/usr/bin/env python3
-"""
-Live trading example for the delta-neutral options strategy.
-"""
 
 import os
 import sys
-import argparse
-import logging
 from pathlib import Path
 
-import sys
-from pathlib import Path
-sys.path.append(str(Path(__file__).parent.parent))
+# Add the src directory to the Python path
+sys.path.append(str(Path(__file__).parent.parent / 'src'))
+
+import argparse
+import logging
 
 from utils.config import ConfigManager
 from utils.monitoring import TradingLogger, PerformanceMonitor
 from strategy.delta_neutral import DeltaNeutralStrategy
 from trading.live_trading import LiveTradingExecutor
 
-def main(config_path: str):
+def main():
+    """Run the live trading strategy."""
+    parser = argparse.ArgumentParser(description="Run delta-neutral strategy in live trading mode")
+    parser.add_argument("--config", "-c", default="config.json",
+                       help="Path to configuration file")
+    
+    args = parser.parse_args()
+
     # Initialize logging
     logger = TradingLogger(log_dir="logs", log_level="INFO")
     
     try:
         # Load configuration
-        config = ConfigManager(config_path)
+        config = ConfigManager(args.config)
         
         # Initialize monitoring
         monitor = PerformanceMonitor(output_dir="results")
@@ -59,9 +63,4 @@ def main(config_path: str):
         sys.exit(1)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run delta-neutral strategy in live trading mode")
-    parser.add_argument("--config", "-c", default="config.json",
-                       help="Path to configuration file")
-    
-    args = parser.parse_args()
-    main(args.config)
+    main()

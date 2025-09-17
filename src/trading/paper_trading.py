@@ -4,8 +4,8 @@ from decimal import Decimal
 from datetime import datetime
 import logging
 
-from .base import TradingExecutor
-from ..strategy.portfolio import Position
+from trading.base import TradingExecutor
+from strategy.portfolio import Position
 
 class PaperTradingExecutor(TradingExecutor):
     """Paper trading implementation for testing strategies."""

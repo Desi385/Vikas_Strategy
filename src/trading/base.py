@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import logging
 from datetime import datetime
 
-from ..strategy.delta_neutral import DeltaNeutralStrategy
+from strategy.delta_neutral import DeltaNeutralStrategy
 
 class TradingExecutor(ABC):
     """Abstract base class for trading execution."""

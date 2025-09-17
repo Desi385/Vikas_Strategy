@@ -3,13 +3,13 @@ import logging
 from kiteconnect import KiteConnect
 from decimal import Decimal
 
-from .base import TradingExecutor
-from ..strategy.portfolio import Position
+from src.trading.base import TradingExecutor
+from strategy.portfolio import Position
 
 class LiveTradingExecutor(TradingExecutor):
     """Live trading implementation using Zerodha Kite."""
 
-    def __init__(self, strategy, api_key: str, api_secret: str):
+    def __init__(self, strategy, api_key: str, api_secret: str, proxies: dict = None, disable_ssl: bool = False):
         """
         Initialize live trading executor.
         
@@ -17,9 +17,40 @@ class LiveTradingExecutor(TradingExecutor):
             strategy: Trading strategy instance
             api_key: Zerodha API key
             api_secret: Zerodha API secret
+            proxies: Dictionary of proxy settings (optional)
+            disable_ssl: Whether to disable SSL verification (use with caution)
         """
         super().__init__(strategy)
+        
+        # Configure Kite Connect with proxy and SSL settings
         self.kite = KiteConnect(api_key=api_key)
+        
+        # Configure proxy settings if provided
+        if proxies:
+            self.kite.set_proxies(proxies)
+            
+        # Handle SSL verification
+        if disable_ssl:
+            import ssl
+            import requests
+            from requests.adapters import HTTPAdapter
+            from urllib3.poolmanager import PoolManager
+            
+            class TLSAdapter(HTTPAdapter):
+                def init_poolmanager(self, connections, maxsize, block=False):
+                    self.poolmanager = PoolManager(
+                        num_pools=connections,
+                        maxsize=maxsize,
+                        block=block,
+                        ssl_version=ssl.PROTOCOL_TLSv1_2,
+                        cert_reqs=ssl.CERT_NONE
+                    )
+            
+            session = requests.Session()
+            session.verify = False
+            session.mount('https://', TLSAdapter())
+            self.kite.session = session
+            
         self.api_secret = api_secret
         self.logger = logging.getLogger(__name__)
         self._initialize_session()
